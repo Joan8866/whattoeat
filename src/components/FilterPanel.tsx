@@ -3,10 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Utensils, Coffee, Wine, Zap, DollarSign, MapPin } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Utensils, Coffee, Wine, Zap, DollarSign, MapPin, X } from 'lucide-react';
 
 export interface Filters {
-  priceLevel: string;
+  priceLevel: string[];
   distance: string;
   category: string;
 }
@@ -24,8 +25,21 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   onSearch, 
   disabled 
 }) => {
-  const updateFilter = (key: keyof Filters, value: string) => {
+  const updateFilter = (key: keyof Filters, value: any) => {
     onFiltersChange({ ...filters, [key]: value });
+  };
+
+  const togglePriceLevel = (level: string) => {
+    const currentLevels = filters.priceLevel;
+    const newLevels = currentLevels.includes(level)
+      ? currentLevels.filter(l => l !== level)
+      : [...currentLevels, level];
+    updateFilter('priceLevel', newLevels);
+  };
+
+  const removePriceLevel = (level: string) => {
+    const newLevels = filters.priceLevel.filter(l => l !== level);
+    updateFilter('priceLevel', newLevels);
   };
 
   const getCategoryIcon = (category: string) => {
@@ -62,23 +76,42 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           {/* Price Level Filter */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Price Range</label>
-            <Select value={filters.priceLevel} onValueChange={(value) => updateFilter('priceLevel', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Any price" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">Any Price</SelectItem>
-                <SelectItem value="0,1">$ - Budget Friendly</SelectItem>
-                <SelectItem value="2">$$ - Moderate</SelectItem>
-                <SelectItem value="3">$$$ - Expensive</SelectItem>
-                <SelectItem value="4">$$$$ - Very Expensive</SelectItem>
-              </SelectContent>
-            </Select>
-            {filters.priceLevel !== 'any' && (
-              <Badge variant="secondary" className="text-xs">
-                <DollarSign className="w-3 h-3 mr-1" />
-                {getPriceLevelDisplay(filters.priceLevel)}
-              </Badge>
+            <div className="space-y-3">
+              {[
+                { value: '0', label: '$', desc: 'Cheap' },
+                { value: '1', label: '$', desc: 'Budget' },
+                { value: '2', label: '$$', desc: 'Moderate' },
+                { value: '3', label: '$$$', desc: 'Expensive' },
+                { value: '4', label: '$$$$', desc: 'Very Expensive' }
+              ].map((price) => (
+                <div key={price.value} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`price-${price.value}`}
+                    checked={filters.priceLevel.includes(price.value)}
+                    onCheckedChange={() => togglePriceLevel(price.value)}
+                  />
+                  <label 
+                    htmlFor={`price-${price.value}`}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                  >
+                    {price.label} - {price.desc}
+                  </label>
+                </div>
+              ))}
+            </div>
+            {filters.priceLevel.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {filters.priceLevel.map((level) => (
+                  <Badge key={level} variant="secondary" className="text-xs flex items-center gap-1">
+                    <DollarSign className="w-3 h-3" />
+                    {getPriceLevelDisplay(level)}
+                    <X 
+                      className="w-3 h-3 cursor-pointer hover:text-destructive" 
+                      onClick={() => removePriceLevel(level)}
+                    />
+                  </Badge>
+                ))}
+              </div>
             )}
           </div>
 

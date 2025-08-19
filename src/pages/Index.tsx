@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 const Index = () => {
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number; address?: string } | null>(null);
   const [filters, setFilters] = useState<Filters>({
-    priceLevel: 'any',
+    priceLevel: [],
     distance: '1000',
     category: 'restaurant'
   });
@@ -43,18 +43,10 @@ const Index = () => {
       };
 
       // Add price level filter if specified
-      if (filters.priceLevel !== 'any') {
-        if (filters.priceLevel.includes(',')) {
-          // Handle range like "0,1"
-          const levels = filters.priceLevel.split(',').map(Number);
-          request.minPriceLevel = levels[0];
-          request.maxPriceLevel = levels[levels.length - 1];
-        } else {
-          // Handle single level
-          const level = parseInt(filters.priceLevel);
-          request.minPriceLevel = level;
-          request.maxPriceLevel = level;
-        }
+      if (filters.priceLevel.length > 0) {
+        const levels = filters.priceLevel.map(Number).sort();
+        request.minPriceLevel = levels[0];
+        request.maxPriceLevel = levels[levels.length - 1];
       }
 
       service.nearbySearch(request, (results, status) => {
