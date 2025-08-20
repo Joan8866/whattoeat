@@ -24,7 +24,8 @@ const GoogleMap: React.FC<GoogleMapProps> = ({ onLocationSelect, selectedLocatio
       // Fetch API key from Supabase secrets
       let apiKey = '';
       try {
-        const response = await fetch('/api/functions/v1/get-google-maps-key');
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const response = await fetch(`${supabaseUrl}/functions/v1/get-google-maps-key`);
         if (response.ok) {
           const data = await response.json();
           apiKey = data.apiKey;
