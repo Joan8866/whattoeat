@@ -21,9 +21,8 @@ const GoogleMap: React.FC<GoogleMapProps> = ({ onLocationSelect, selectedLocatio
 
   useEffect(() => {
     const initMap = async () => {
-      // For now, let's temporarily use a direct API key approach
-      // You'll need to add your Google Maps API key here
-      const apiKey = 'YOUR_GOOGLE_MAPS_API_KEY'; // Replace with your actual API key
+      // Google Maps API key
+      const apiKey = 'AIzaSyDGKLrK_fVIcvokha7EBadJmfnlohg6lOs';
       
       console.log('Google Maps API Key:', apiKey ? 'Present' : 'Missing');
 
