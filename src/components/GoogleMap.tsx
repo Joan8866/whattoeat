@@ -21,24 +21,13 @@ const GoogleMap: React.FC<GoogleMapProps> = ({ onLocationSelect, selectedLocatio
 
   useEffect(() => {
     const initMap = async () => {
+      const loader = new Loader({
+        apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+        version: 'weekly',
+        libraries: ['places']
+      });
+
       try {
-        // Fetch API key from Supabase edge function
-        const response = await fetch('/supabase/functions/v1/get-google-maps-key');
-        const data = await response.json();
-        
-        if (!response.ok || !data.apiKey) {
-          throw new Error('Failed to get API key');
-        }
-        
-        const apiKey = data.apiKey;
-        console.log('Google Maps API Key:', apiKey ? 'Present' : 'Missing');
-
-        const loader = new Loader({
-          apiKey: apiKey,
-          version: 'weekly',
-          libraries: ['places']
-        });
-
         await loader.load();
         
         if (mapRef.current) {

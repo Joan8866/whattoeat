@@ -33,27 +33,13 @@ const Index = () => {
     setUsedRestaurants(new Set());
 
     try {
-      // Check if Google Maps API is loaded
-      if (!window.google || !window.google.maps || !window.google.maps.places) {
-        toast({
-          title: "Maps API Error",
-          description: "Google Maps API is not properly loaded. Please refresh the page.",
-          variant: "destructive"
-        });
-        setIsSearching(false);
-        return;
-      }
-
-      console.log('Selected location:', selectedLocation);
-      console.log('Search filters:', filters);
-
       const service = new google.maps.places.PlacesService(document.createElement('div'));
       
       const request: google.maps.places.PlaceSearchRequest = {
         location: selectedLocation,
         radius: parseInt(filters.distance),
-        keyword: 'restaurant food',
-        // Remove type filter temporarily to test
+        type: filters.category,
+        openNow: true
       };
 
       // Add price level filter if specified
@@ -64,48 +50,21 @@ const Index = () => {
       }
 
       service.nearbySearch(request, (results, status) => {
-        console.log('Places API response:', { status, resultsCount: results?.length });
         setIsSearching(false);
         
         if (status === google.maps.places.PlacesServiceStatus.OK && results && results.length > 0) {
-          console.log('Found restaurants:', results.length);
           setRestaurants(results as Restaurant[]);
           const randomRestaurant = results[Math.floor(Math.random() * results.length)] as Restaurant;
           setCurrentRestaurant(randomRestaurant);
           setUsedRestaurants(new Set([randomRestaurant.place_id]));
         } else {
-          console.log('No restaurants found. Status:', status);
           setRestaurants([]);
           setCurrentRestaurant(null);
-          
-          // Try without the openNow filter as fallback
-          if (request.openNow) {
-            console.log('Retrying without openNow filter...');
-            const fallbackRequest = { ...request };
-            delete fallbackRequest.openNow;
-            
-            service.nearbySearch(fallbackRequest, (fallbackResults, fallbackStatus) => {
-              if (fallbackStatus === google.maps.places.PlacesServiceStatus.OK && fallbackResults && fallbackResults.length > 0) {
-                console.log('Found restaurants without openNow filter:', fallbackResults.length);
-                setRestaurants(fallbackResults as Restaurant[]);
-                const randomRestaurant = fallbackResults[Math.floor(Math.random() * fallbackResults.length)] as Restaurant;
-                setCurrentRestaurant(randomRestaurant);
-                setUsedRestaurants(new Set([randomRestaurant.place_id]));
-              } else {
-                toast({
-                  title: "No Results",
-                  description: "No restaurants found matching your criteria. Try adjusting your filters or expanding the search radius.",
-                  variant: "destructive"
-                });
-              }
-            });
-          } else {
-            toast({
-              title: "No Results", 
-              description: "No restaurants found matching your criteria. Try adjusting your filters or expanding the search radius.",
-              variant: "destructive"
-            });
-          }
+          toast({
+            title: "No Results",
+            description: "No open restaurants found matching your criteria. Try adjusting your filters.",
+            variant: "destructive"
+          });
         }
       });
     } catch (error) {
