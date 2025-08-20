@@ -50,21 +50,48 @@ const Index = () => {
       }
 
       service.nearbySearch(request, (results, status) => {
+        console.log('Places API response:', { status, resultsCount: results?.length });
         setIsSearching(false);
         
         if (status === google.maps.places.PlacesServiceStatus.OK && results && results.length > 0) {
+          console.log('Found restaurants:', results.length);
           setRestaurants(results as Restaurant[]);
           const randomRestaurant = results[Math.floor(Math.random() * results.length)] as Restaurant;
           setCurrentRestaurant(randomRestaurant);
           setUsedRestaurants(new Set([randomRestaurant.place_id]));
         } else {
+          console.log('No restaurants found. Status:', status);
           setRestaurants([]);
           setCurrentRestaurant(null);
-          toast({
-            title: "No Results",
-            description: "No open restaurants found matching your criteria. Try adjusting your filters.",
-            variant: "destructive"
-          });
+          
+          // Try without the openNow filter as fallback
+          if (request.openNow) {
+            console.log('Retrying without openNow filter...');
+            const fallbackRequest = { ...request };
+            delete fallbackRequest.openNow;
+            
+            service.nearbySearch(fallbackRequest, (fallbackResults, fallbackStatus) => {
+              if (fallbackStatus === google.maps.places.PlacesServiceStatus.OK && fallbackResults && fallbackResults.length > 0) {
+                console.log('Found restaurants without openNow filter:', fallbackResults.length);
+                setRestaurants(fallbackResults as Restaurant[]);
+                const randomRestaurant = fallbackResults[Math.floor(Math.random() * fallbackResults.length)] as Restaurant;
+                setCurrentRestaurant(randomRestaurant);
+                setUsedRestaurants(new Set([randomRestaurant.place_id]));
+              } else {
+                toast({
+                  title: "No Results",
+                  description: "No restaurants found matching your criteria. Try adjusting your filters or expanding the search radius.",
+                  variant: "destructive"
+                });
+              }
+            });
+          } else {
+            toast({
+              title: "No Results", 
+              description: "No restaurants found matching your criteria. Try adjusting your filters or expanding the search radius.",
+              variant: "destructive"
+            });
+          }
         }
       });
     } catch (error) {
