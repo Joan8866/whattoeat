@@ -21,8 +21,22 @@ const GoogleMap: React.FC<GoogleMapProps> = ({ onLocationSelect, selectedLocatio
 
   useEffect(() => {
     const initMap = async () => {
+      // Fetch API key from Supabase secrets
+      let apiKey = '';
+      try {
+        const response = await fetch('/api/functions/v1/get-google-maps-key');
+        if (response.ok) {
+          const data = await response.json();
+          apiKey = data.apiKey;
+        }
+      } catch (error) {
+        console.error('Failed to fetch Google Maps API key:', error);
+      }
+
+      console.log('Google Maps API Key:', apiKey ? 'Present' : 'Missing');
+
       const loader = new Loader({
-        apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+        apiKey: apiKey,
         version: 'weekly',
         libraries: ['places']
       });
