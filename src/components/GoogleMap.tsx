@@ -21,19 +21,10 @@ const GoogleMap: React.FC<GoogleMapProps> = ({ onLocationSelect, selectedLocatio
 
   useEffect(() => {
     const initMap = async () => {
-      // Fetch API key from Supabase secrets
-      let apiKey = '';
-      try {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const response = await fetch(`${supabaseUrl}/functions/v1/get-google-maps-key`);
-        if (response.ok) {
-          const data = await response.json();
-          apiKey = data.apiKey;
-        }
-      } catch (error) {
-        console.error('Failed to fetch Google Maps API key:', error);
-      }
-
+      // For now, let's temporarily use a direct API key approach
+      // You'll need to add your Google Maps API key here
+      const apiKey = 'YOUR_GOOGLE_MAPS_API_KEY'; // Replace with your actual API key
+      
       console.log('Google Maps API Key:', apiKey ? 'Present' : 'Missing');
 
       const loader = new Loader({
