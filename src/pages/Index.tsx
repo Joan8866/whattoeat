@@ -33,13 +33,27 @@ const Index = () => {
     setUsedRestaurants(new Set());
 
     try {
+      // Check if Google Maps API is loaded
+      if (!window.google || !window.google.maps || !window.google.maps.places) {
+        toast({
+          title: "Maps API Error",
+          description: "Google Maps API is not properly loaded. Please refresh the page.",
+          variant: "destructive"
+        });
+        setIsSearching(false);
+        return;
+      }
+
+      console.log('Selected location:', selectedLocation);
+      console.log('Search filters:', filters);
+
       const service = new google.maps.places.PlacesService(document.createElement('div'));
       
       const request: google.maps.places.PlaceSearchRequest = {
         location: selectedLocation,
         radius: parseInt(filters.distance),
-        type: filters.category,
-        openNow: true
+        keyword: 'restaurant food',
+        // Remove type filter temporarily to test
       };
 
       // Add price level filter if specified
